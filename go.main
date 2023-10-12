@@ -1,0 +1,13 @@
+package main
+
+import "github.com/panetta03/dinosaur-cage/models"
+
+func main() {
+    tyrannosaurusFactory := models.TyrannosaurusFactory{}
+    triceratopsFactory := models.TriceratopsFactory{}
+
+    rex := tyrannosaurusFactory.CreateDinosaur("Rex")
+    spike := triceratopsFactory.CreateDinosaur("Spike")
+
+    // Insert the dinosaurs into the database or use them as needed.
+}
