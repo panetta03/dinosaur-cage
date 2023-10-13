@@ -1,36 +1,25 @@
 package repository
 
 import (
-	"database/sql"
 	models "dinosaur-cage/models/dinosaur"
+
+	"github.com/hashicorp/go-memdb"
 )
 
-// DinosaurRepository is responsible for database operations related to dinosaurs.
-type DinosaurRepository struct {
-	db *sql.DB
+func InsertDinosaur(txn *memdb.Txn, dinosaur *models.Dinosaur) error {
+	return txn.Insert("dinosaurs", dinosaur)
 }
 
-// NewDinosaurRepository creates a new instance of DinosaurRepository.
-func NewDinosaurRepository(db *sql.DB) *DinosaurRepository {
-	return &DinosaurRepository{db}
-}
+func GetDinosaur(txn *memdb.Txn, id int) (*models.Dinosaur, error) {
+	raw, err := txn.First("dinosaurs", "id", id)
+	if err != nil {
+		return nil, err
+	}
 
-// InsertDinosaur inserts a dinosaur into the database.
-func (r *DinosaurRepository) InsertDinosaur(dinosaur models.Dinosaur) error {
+	if raw == nil {
+		return nil, nil
+	}
 
-	// Define the SQL query for inserting a dinosaur
-	insertDinosaurQuery := `
-        INSERT INTO dinosaurs (name, species, diet, cage_id)
-        VALUES ($1, $2, $3, $4)`
-
-	// Execute the SQL query
-	_, err := r.db.Exec(
-		insertDinosaurQuery,
-		dinosaur.Name,
-		dinosaur.Species,
-		string(dinosaur.Diet),
-		dinosaur.CageID,
-	)
-
-	return err
+	dinosaur := raw.(*models.Dinosaur)
+	return dinosaur, nil
 }

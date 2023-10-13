@@ -1,29 +1,37 @@
 package database
 
 import (
-	"database/sql"
-
-	_ "github.com/lib/pq" // Import the PostgreSQL driver
+	"github.com/hashicorp/go-memdb"
 )
 
-var db *sql.DB
+var db *memdb.MemDB
 
-// InitDB initializes the database connection.
-func InitDB() *sql.DB {
-	// Set up the PostgreSQL connection string
-	connStr := "user=username dbname=jurassicpark sslmode=disable"
+// InitDB initializes the go-memdb database.
+func InitDB() {
+	schema := &memdb.DBSchema{
+		Tables: map[string]*memdb.TableSchema{
+			"dinosaurs": {
+				Name: "dinosaurs",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": {
+						Name:    "id",
+						Unique:  true,
+						Indexer: &memdb.IntFieldIndex{Field: "ID"},
+					},
+				},
+			},
+			// Define more tables and indexes if needed.
+		},
+	}
 
-	// Open a database connection
 	var err error
-	db, err = sql.Open("postgres", connStr)
+	db, err = memdb.NewMemDB(schema)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	// Verify the database connection
-	if err = db.Ping(); err != nil {
-		panic(err)
-	}
-
+// GetDB returns the go-memdb database instance.
+func GetDB() *memdb.MemDB {
 	return db
 }

@@ -1,0 +1,85 @@
+definitions:
+  models.Diet:
+    enum:
+    - carnivore
+    - herbivore
+    type: string
+    x-enum-varnames:
+    - Carnivore
+    - Herbivore
+  models.Dinosaur:
+    properties:
+      cage_id:
+        type: integer
+      diet:
+        $ref: '#/definitions/models.Diet'
+      id:
+        type: integer
+      name:
+        type: string
+      species:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /dinosaurs:
+    post:
+      consumes:
+      - application/json
+      description: Create a new dinosaur
+      operationId: create-dinosaur
+      parameters:
+      - description: Dinosaur object
+        in: body
+        name: dinosaur
+        required: true
+        schema:
+          $ref: '#/definitions/models.Dinosaur'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Dinosaur'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a dinosaur
+  /dinosaurs/{id}:
+    get:
+      description: Get a dinosaur's details by its ID
+      operationId: get-dinosaur
+      parameters:
+      - description: Dinosaur ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Dinosaur'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get a dinosaur by ID
+swagger: "2.0"
