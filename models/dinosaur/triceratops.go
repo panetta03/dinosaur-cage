@@ -1,13 +1,14 @@
 package models
 
-// TyrannosaurusFactory creates Tyrannosaurus dinosaurs.
-type TyrannosaurusFactory struct{}
+// TriceratopsFactory creates Triceratops dinosaurs.
+type TriceratopsFactory struct{}
 
-// CreateDinosaur creates a Tyrannosaurus dinosaur with the given name.
-func (f TyrannosaurusFactory) CreateDinosaur(name string) Dinosaur {
+// CreateDinosaur creates a Triceratops dinosaur with the given name.
+func (f TriceratopsFactory) CreateDinosaur(name string) Dinosaur {
 	return Dinosaur{
 		Name:    name,
-		Species: "Tyrannosaurus",
-		Diet:    Carnivore,
+		Species: "Triceratops",
+		Diet:    Herbivore,
+		// Add other specific attributes for Triceratops.
 	}
 }

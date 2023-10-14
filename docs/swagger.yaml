@@ -1,4 +1,17 @@
 definitions:
+  models.Cage:
+    properties:
+      current_dinosaurs:
+        items:
+          $ref: '#/definitions/models.Dinosaur'
+        type: array
+      id:
+        type: integer
+      max_capacity:
+        type: integer
+      power_status:
+        $ref: '#/definitions/models.PowerStatus'
+    type: object
   models.Diet:
     enum:
     - carnivore
@@ -20,9 +33,147 @@ definitions:
       species:
         type: string
     type: object
+  models.PowerStatus:
+    enum:
+    - DOWN
+    - ACTIVE
+    - DOWN
+    type: string
+    x-enum-varnames:
+    - DefaultPowerStatus
+    - PowerStatusActive
+    - PowerStatusDown
 info:
   contact: {}
 paths:
+  /cages:
+    get:
+      description: Retrieve a list of all cages.
+      operationId: get-cages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Cage'
+            type: array
+      summary: Get a list of cages
+    post:
+      consumes:
+      - application/json
+      description: Create a new cage in the database.
+      operationId: create-cage
+      parameters:
+      - description: Cage object
+        in: body
+        name: cage
+        required: true
+        schema:
+          $ref: '#/definitions/models.Cage'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Cage'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a new cage
+  /cages/{id}:
+    delete:
+      description: Delete an existing cage by ID from the database.
+      operationId: delete-cage
+      parameters:
+      - description: Cage ID to delete
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Cage deleted successfully
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Cage Not Found
+          schema:
+            type: string
+      summary: Delete an existing cage
+    get:
+      description: Retrieve a specific cage based on its ID.
+      operationId: get-cage-by-id
+      parameters:
+      - description: Cage ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cage'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Cage not found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get a specific cage by ID
+    put:
+      consumes:
+      - application/json
+      description: Update an existing cage in the database.
+      operationId: update-cage
+      parameters:
+      - description: Cage ID to update
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Cage object
+        in: body
+        name: cage
+        required: true
+        schema:
+          $ref: '#/definitions/models.Cage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cage'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Cage Not Found
+          schema:
+            type: string
+      summary: Update an existing cage
   /dinosaurs:
     post:
       consumes:

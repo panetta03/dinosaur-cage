@@ -6,10 +6,10 @@ import (
 
 // Cage represents a dinosaur cage with specific requirements.
 type Cage struct {
-	ID               uint              `json:"id"`
-	PowerStatus      PowerStatus       `json:"power_status"`
-	MaxCapacity      int               `json:"max_capacity"`
-	CurrentDinosaurs []models.Dinosaur `json:"current_dinosaurs"`
+	ID               int                `json:"id"`
+	PowerStatus      PowerStatus        `json:"power_status"`
+	MaxCapacity      int                `json:"max_capacity"`
+	CurrentDinosaurs *[]models.Dinosaur `json:"current_dinosaurs"`
 }
 
 // PowerStatus represents the power status of a cage.

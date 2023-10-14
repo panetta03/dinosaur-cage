@@ -20,9 +20,6 @@ import (
 // @Failure 400 {object} string "Bad Request"
 // @Failure 500 {object} string "Internal Server Error"
 // @Router /dinosaurs [post]
-
-var lastDinosaurID int // Define a package-level variable
-
 func CreateDinosaur(c *gin.Context) {
 	var d models.Dinosaur
 	if err := c.ShouldBindJSON(&d); err != nil {
@@ -30,21 +27,32 @@ func CreateDinosaur(c *gin.Context) {
 		return
 	}
 
-	// Increment the lastDinosaurID
-	lastDinosaurID++
-	d.ID = lastDinosaurID
-
 	txn := database.GetDB().Txn(true)
 	defer txn.Abort()
 
+	// Determine the factory based on the dinosaur's species
+	var factory models.DinosaurFactory
+	switch d.Species {
+	case "Triceratops":
+		factory = &models.TriceratopsFactory{}
+	case "Tyrannosaurus":
+		factory = &models.TyrannosaurusFactory{}
+	default:
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dinosaur species"})
+		return
+	}
+
+	// Create the dinosaur with the appropriate factory
+	newDinosaur := factory.CreateDinosaur(d.Name)
+
 	// Insert the dinosaur into the go-memdb database
-	if err := repository.InsertDinosaur(txn, &d); err != nil {
+	if err := repository.InsertDinosaur(txn, &newDinosaur); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create dinosaur"})
 		return
 	}
 
 	txn.Commit()
-	c.JSON(http.StatusCreated, d)
+	c.JSON(http.StatusCreated, newDinosaur)
 }
 
 // @Summary Get a dinosaur by ID

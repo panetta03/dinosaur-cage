@@ -20,7 +20,16 @@ func InitDB() {
 					},
 				},
 			},
-			// Define more tables and indexes if needed.
+			"cages": {
+				Name: "cages",
+				Indexes: map[string]*memdb.IndexSchema{
+					"id": {
+						Name:    "id",
+						Unique:  true,
+						Indexer: &memdb.IntFieldIndex{Field: "ID"},
+					},
+				},
+			},
 		},
 	}
 

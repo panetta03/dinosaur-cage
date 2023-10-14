@@ -13,5 +13,10 @@ func SetupRoutes(r *gin.Engine) {
 	r.GET("/dinosaurs/:id", controllers.GetDinosaur)
 	r.POST("/dinosaurs", controllers.CreateDinosaur)
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(files.Handler)) // Serve Swagger UI
+	r.GET("/cages", controllers.GetCages)
+	r.GET("/cages/:id", controllers.GetCageByID)
+	r.POST("/cages", controllers.CreateCage)
+	r.PUT("/cages/:id", controllers.UpdateCage)
+	r.DELETE("/cages/:id", controllers.DeleteCage)
 	// Add other routes as needed
 }
