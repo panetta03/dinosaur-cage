@@ -1,68 +1,32 @@
-package test
+package database
 
 import (
-	"dinosaur-cage/database"               // Adjust the import path
-	"dinosaur-cage/database/repository"    // Adjust the import path
-	models "dinosaur-cage/models/dinosaur" // Adjust the import path
-	"testing"
+	dinosaur "dinosaur-cage/models/dinosaur"
+
+	"gorm.io/gorm"
 )
 
-func TestInsertDinosaur(t *testing.T) {
-	// Set up a test database
-	database.InitDB()
-
-	// Start a transaction
-	txn := database.GetDB().Txn(true)
-	defer txn.Abort()
-
-	dinosaur := &models.Dinosaur{
-		ID:      1, // Adjust with a unique ID
-		Name:    "Test Dino",
-		Species: "Test Species",
-		Diet:    models.Herbivore,
-	}
-
-	if err := repository.InsertDinosaur(txn, dinosaur); err != nil {
-		t.Errorf("Error inserting dinosaur: %v", err)
-	}
-
-	// Retrieve the inserted dinosaur to verify
-	retrievedDino, err := repository.GetDinosaur(txn, 1) // Adjust with the correct ID
-	if err != nil {
-		t.Errorf("Error retrieving dinosaur: %v", err)
-	}
-
-	if retrievedDino == nil {
-		t.Error("Expected dinosaur not found in the database")
-	}
+// DinosaurRepository represents a repository for interacting with the dinosaur model.
+type DinosaurRepository struct {
+	db *gorm.DB
 }
 
-func TestGetDinosaur(t *testing.T) {
-	// Set up a test database
-	database.InitDB()
+// NewDinosaurRepository creates a new DinosaurRepository.
+func NewDinosaurRepository(db *gorm.DB) *DinosaurRepository {
+	return &DinosaurRepository{db: db}
+}
 
-	// Start a transaction
-	txn := database.GetDB().Txn(true)
-	defer txn.Abort()
+// InsertDinosaur inserts a dinosaur into the database.
+func (r *DinosaurRepository) InsertDinosaur(dinosaur *dinosaur.Dinosaur) error {
+	return r.db.Create(dinosaur).Error
+}
 
-	// Insert a dinosaur for testing
-	dinosaur := &models.Dinosaur{
-		ID:      1, // Adjust with a unique ID
-		Name:    "Test Dino",
-		Species: "Test Species",
-		Diet:    models.Herbivore,
-	}
-	if err := repository.InsertDinosaur(txn, dinosaur); err != nil {
-		t.Errorf("Error inserting dinosaur: %v", err)
-	}
-
-	// Retrieve the inserted dinosaur
-	retrievedDino, err := repository.GetDinosaur(txn, 1) // Adjust with the correct ID
+// GetDinosaur retrieves a dinosaur from the database by ID.
+func (r *DinosaurRepository) GetDinosaur(id uint) (*dinosaur.Dinosaur, error) {
+	var dino dinosaur.Dinosaur
+	err := r.db.Where("id = ?", id).First(&dino).Error
 	if err != nil {
-		t.Errorf("Error retrieving dinosaur: %v", err)
+		return nil, err
 	}
-
-	if retrievedDino == nil {
-		t.Error("Expected dinosaur not found in the database")
-	}
+	return &dino, nil
 }
