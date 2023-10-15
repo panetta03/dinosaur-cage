@@ -179,6 +179,39 @@ paths:
           schema:
             type: string
       summary: Get a specific cage by ID
+    put:
+      consumes:
+      - application/json
+      description: Update an existing cage in the database.
+      operationId: update-cage
+      parameters:
+      - description: Cage ID to update
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated Cage object
+        in: body
+        name: cage
+        required: true
+        schema:
+          $ref: '#/definitions/models.Cage'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Cage'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Cage Not Found
+          schema:
+            type: string
+      summary: Update an existing cage
   /dinosaurs:
     post:
       consumes:
