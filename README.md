@@ -55,3 +55,5 @@ The approach to this project to create an extensible way to add new species of d
 Given that I was learning go with this project I wanted to avoid any external dependencies that could make it difficult to use this project. For example I started with a Postgres implementation and then moved on to sqlite. When it became clear that time was factor for this project I ended up with an in memory solution for persistence using go-memdb.
 
  With Cages I was able to manage to add most of the features of a cage. I abstracted out checks on cages into a separate utils section to avoid too much noise in the controller. Additionally I chose swagger for clean documentation and interaction with the APIs. 
+
+ Things that I did not complete. I wasn't able to complete the automated tests. I would have liked to have had more time to add unit testing. Lastly I would like revampe this solution to use better persistence either through sqlite or postgres.
