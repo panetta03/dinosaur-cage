@@ -33,10 +33,22 @@ func CreateDinosaur(c *gin.Context) {
 	// Determine the factory based on the dinosaur's species
 	var factory models.DinosaurFactory
 	switch d.Species {
+	case "Ankylosaurus":
+		factory = &models.AnkylosaurusFactory{}
+	case "Brachiosaurus":
+		factory = &models.BrachiosaurusFactory{}
+	case "Megalosaurus":
+		factory = &models.MegalosaurusFactory{}
+	case "Spinosaurus":
+		factory = &models.SpinosaurusFactory{}
+	case "Stegosaurus":
+		factory = &models.StegosaurusFactory{}
 	case "Triceratops":
 		factory = &models.TriceratopsFactory{}
 	case "Tyrannosaurus":
 		factory = &models.TyrannosaurusFactory{}
+	case "Velociraptor":
+		factory = &models.VelociraptorFactory{}
 	default:
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dinosaur species"})
 		return

@@ -78,6 +78,61 @@ const docTemplate = `{
                 }
             }
         },
+        "/cages/{cage_id}/dinosaurs/{dinosaur_id}": {
+            "post": {
+                "description": "Add a dinosaur to a cage with specific checks.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add a dinosaur to a cage.",
+                "operationId": "add-dinosaur-to-cage",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cage ID",
+                        "name": "cage_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Dinosaur ID",
+                        "name": "dinosaur_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Updated cage",
+                        "schema": {
+                            "$ref": "#/definitions/models.Cage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/cages/{id}": {
             "get": {
                 "description": "Retrieve a specific cage based on its ID.",

@@ -18,5 +18,6 @@ func SetupRoutes(r *gin.Engine) {
 	r.POST("/cages", controllers.CreateCage)
 	r.PUT("/cages/:id", controllers.UpdateCage)
 	r.DELETE("/cages/:id", controllers.DeleteCage)
+	r.POST("/cages/:cage_id/dinosaurs/:dinosaur_id", controllers.AddDinosaurToCage)
 	// Add other routes as needed
 }

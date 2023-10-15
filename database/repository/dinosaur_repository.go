@@ -3,6 +3,7 @@ package repository
 import (
 	cagemodels "dinosaur-cage/models"
 	dinomodels "dinosaur-cage/models/dinosaur"
+	"log"
 
 	"github.com/hashicorp/go-memdb"
 )
@@ -47,7 +48,7 @@ func GetDinosaur(txn *memdb.Txn, id int) (*dinomodels.Dinosaur, error) {
 }
 
 func GetCage(txn *memdb.Txn, id int) (*cagemodels.Cage, error) {
-	raw, err := txn.First("dinosaurs", "id", id)
+	raw, err := txn.First("cages", "id", id)
 	if err != nil {
 		return nil, err
 	}
@@ -94,4 +95,25 @@ func DeleteCage(id int) {
 			return
 		}
 	}
+}
+
+func AddDinosaurToCage(dinosaur *dinomodels.Dinosaur, cage *cagemodels.Cage) {
+	// Log information about the action
+	log.Printf("Adding dinosaur (ID: %d) to cage (ID: %d)", dinosaur.ID, cage.ID)
+
+	// Check for nil or create a new CurrentDinosaurs slice
+	if cage.CurrentDinosaurs == nil {
+		log.Println("CurrentDinosaurs slice is nil. Creating a new one.")
+		cage.CurrentDinosaurs = &[]dinomodels.Dinosaur{*dinosaur}
+	} else {
+		// Log the number of existing dinosaurs
+		log.Printf("Number of existing dinosaurs in the cage: %d", len(*cage.CurrentDinosaurs))
+
+		// Append the dinosaur to the CurrentDinosaurs of the cage
+		*cage.CurrentDinosaurs = append(*cage.CurrentDinosaurs, *dinosaur)
+		log.Printf("Dinosaur added. Updated number of dinosaurs in the cage: %d", len(*cage.CurrentDinosaurs))
+	}
+
+	// Log when the operation is complete
+	log.Println("Dinosaur successfully added to the cage.")
 }

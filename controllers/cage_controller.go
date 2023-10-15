@@ -4,8 +4,8 @@ import (
 	"dinosaur-cage/database"
 	"dinosaur-cage/database/repository"
 	cagemodels "dinosaur-cage/models"
+	validation "dinosaur-cage/utils"
 	"log"
-
 	"net/http"
 	"strconv"
 
@@ -162,3 +162,119 @@ func DeleteCage(c *gin.Context) {
 	repository.DeleteCage(id)
 	c.JSON(http.StatusOK, gin.H{"message": "Cage deleted successfully"})
 }
+
+// AddDinosaurToCage adds a dinosaur to a cage.
+// @Summary Add a dinosaur to a cage.
+// @Description Add a dinosaur to a cage with specific checks.
+// @ID add-dinosaur-to-cage
+// @Accept json
+// @Produce json
+// @Param cage_id path int true "Cage ID"
+// @Param dinosaur_id path int true "Dinosaur ID"
+// @Success 200 {object} cagemodels.Cage "Updated cage"
+// @Failure 400 {object} string "Bad Request"
+// @Failure 404 {object} string "Not Found"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /cages/{cage_id}/dinosaurs/{dinosaur_id} [post]
+func AddDinosaurToCage(c *gin.Context) {
+	cageID, err := strconv.Atoi(c.Param("cage_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cage ID"})
+		return
+	}
+
+	dinosaurID, err := strconv.Atoi(c.Param("dinosaur_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dinosaur ID"})
+		return
+	}
+
+	// Log the incoming cage and dinosaur IDs
+	log.Printf("Received request to add Dinosaur ID: %d to Cage ID: %d", dinosaurID, cageID)
+
+	// Get the DB
+	txn := database.GetDB().Txn(false)
+	defer txn.Abort()
+
+	// Get the cage by cage ID
+	cage, err := repository.GetCage(txn, cageID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cage"})
+		return
+	}
+	if cage == nil {
+		log.Printf("Cage with ID %d not found", cageID)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Cage not found"})
+		return
+	}
+
+	// Get the dinosaur by dinosaur ID
+	dinosaur, err := repository.GetDinosaur(txn, dinosaurID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve dinosaur"})
+		return
+	}
+	if dinosaur == nil {
+		log.Printf("Dinosaur with ID %d not found", dinosaurID)
+		c.JSON(http.StatusNotFound, gin.H{"error": "Dinosaur not found"})
+		return
+	}
+
+	// Check the rules for adding a dinosaur to the cage
+	canAdd, err := validation.CanAddDinosaurToCage(cage, dinosaur)
+	if !canAdd {
+		log.Printf("Cannot add Dinosaur ID: %d to Cage ID: %d due to rules: %v", dinosaurID, cageID, err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()}) // Use the custom error message
+		return
+	}
+
+	// Add the dinosaur to the cage
+	repository.AddDinosaurToCage(dinosaur, cage)
+
+	log.Printf("Dinosaur ID: %d successfully added to Cage ID: %d", dinosaurID, cageID)
+	c.JSON(http.StatusOK, cage)
+}
+
+/*
+// ToggleCagePowerStatus toggles the power status of a cage.
+// @Summary Toggle the power status of a cage.
+// @Description Toggle the power status of a cage with checks.
+// @ID toggle-cage-power-status
+// @Accept json
+// @Produce json
+// @Param id path int true "Cage ID"
+// @Success 200 {object} cagemodels.Cage "Updated cage"
+// @Failure 400 {object} string "Bad Request"
+// @Failure 404 {object} string "Cage not found"
+// @Failure 500 {object} string "Internal Server Error"
+// @Router /cages/{id}/power [put]
+func ToggleCagePowerStatus(c *gin.Context) {
+	cageID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid cage ID"})
+		return
+	}
+
+	// Get the cage by cage ID
+	txn := database.GetDB().Txn(true)
+	defer txn.Abort()
+	cage, err := repository.GetCage(txn, cageID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve cage"})
+		return
+	}
+	if cage == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Cage not found"})
+		return
+	}
+
+	// Toggle the PowerStatus of the cage
+	if cage.PowerStatus == cagemodels.PowerStatusActive {
+		cage.PowerStatus = cagemodels.PowerStatusDown
+	} else {
+		cage.PowerStatus = cagemodels.PowerStatusActive
+	}
+
+	c.JSON(http.StatusOK, cage)
+}
+*/

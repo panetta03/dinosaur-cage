@@ -9,7 +9,7 @@ type Cage struct {
 	ID               int                `json:"id"`
 	PowerStatus      PowerStatus        `json:"power_status"`
 	MaxCapacity      int                `json:"max_capacity"`
-	CurrentDinosaurs *[]models.Dinosaur `json:"current_dinosaurs"`
+	CurrentDinosaurs *[]models.Dinosaur `json:"current_dinosaurs,omitempty"`
 }
 
 // PowerStatus represents the power status of a cage.
