@@ -7,8 +7,10 @@ import (
 // Cage represents a dinosaur cage with specific requirements.
 type Cage struct {
 	ID               int                `json:"id"`
+	Name             string             `json:"name"`
 	PowerStatus      PowerStatus        `json:"power_status"`
 	MaxCapacity      int                `json:"max_capacity"`
+	CurrentCapacity  int                `json:"current_capacity"`
 	CurrentDinosaurs *[]models.Dinosaur `json:"current_dinosaurs,omitempty"`
 }
 

@@ -10,12 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateDinosaurRequest represents the request to create a new dinosaur.
+type CreateDinosaurRequest struct {
+	Name    string `json:"name" binding:"required" example:"Dino"`
+	Species string `json:"species" binding:"required" example:"Tyrannosaurus"`
+}
+
+// CreateDinosaur creates a new dinosaur.
 // @Summary Create a dinosaur
 // @Description Create a new dinosaur
 // @ID create-dinosaur
 // @Accept json
 // @Produce json
-// @Param dinosaur body models.Dinosaur true "Dinosaur object"
+// @Param dinosaur body CreateDinosaurRequest true "Dinosaur object"
 // @Success 201 {object} models.Dinosaur
 // @Failure 400 {object} string "Bad Request"
 // @Failure 500 {object} string "Internal Server Error"

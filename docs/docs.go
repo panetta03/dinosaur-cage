@@ -16,25 +16,6 @@ const docTemplate = `{
     "basePath": "{{.BasePath}}",
     "paths": {
         "/cages": {
-            "get": {
-                "description": "Retrieve a list of all cages.",
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Get a list of cages",
-                "operationId": "get-cages",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.Cage"
-                            }
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Create a new cage in the database.",
                 "consumes": [
@@ -43,16 +24,16 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
-                "summary": "Create a new cage",
+                "summary": "Create a new cage.",
                 "operationId": "create-cage",
                 "parameters": [
                     {
-                        "description": "Cage object",
+                        "description": "New Cage object",
                         "name": "cage",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Cage"
+                            "$ref": "#/definitions/controllers.CreateCageRequest"
                         }
                     }
                 ],
@@ -65,12 +46,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -176,89 +151,6 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "put": {
-                "description": "Update an existing cage in the database.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "summary": "Update an existing cage",
-                "operationId": "update-cage",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Cage ID to update",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated Cage object",
-                        "name": "cage",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.Cage"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Cage"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Cage Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an existing cage by ID from the database.",
-                "summary": "Delete an existing cage",
-                "operationId": "delete-cage",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Cage ID to delete",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Cage deleted successfully",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Cage Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
             }
         },
         "/dinosaurs": {
@@ -279,7 +171,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Dinosaur"
+                            "$ref": "#/definitions/controllers.CreateDinosaurRequest"
                         }
                     }
                 ],
@@ -352,9 +244,66 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "controllers.CreateCageRequest": {
+            "type": "object",
+            "required": [
+                "max_capacity",
+                "name",
+                "power_status"
+            ],
+            "properties": {
+                "max_capacity": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Cage A"
+                },
+                "power_status": {
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/controllers.PowerStatus"
+                        }
+                    ],
+                    "example": "ACTIVE"
+                }
+            }
+        },
+        "controllers.CreateDinosaurRequest": {
+            "type": "object",
+            "required": [
+                "name",
+                "species"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "example": "Dino"
+                },
+                "species": {
+                    "type": "string",
+                    "example": "Tyrannosaurus"
+                }
+            }
+        },
+        "controllers.PowerStatus": {
+            "type": "string",
+            "enum": [
+                "ACTIVE",
+                "DOWN"
+            ],
+            "x-enum-varnames": [
+                "PowerStatusActive",
+                "PowerStatusDown"
+            ]
+        },
         "models.Cage": {
             "type": "object",
             "properties": {
+                "current_capacity": {
+                    "type": "integer"
+                },
                 "current_dinosaurs": {
                     "type": "array",
                     "items": {
@@ -366,6 +315,9 @@ const docTemplate = `{
                 },
                 "max_capacity": {
                     "type": "integer"
+                },
+                "name": {
+                    "type": "string"
                 },
                 "power_status": {
                     "$ref": "#/definitions/models.PowerStatus"
