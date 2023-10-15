@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// Set enums for Cage Request PowerStatus
 type PowerStatus string
 
 const (
@@ -43,6 +44,7 @@ func CreateCage(c *gin.Context) {
 		return
 	}
 
+	//get the DB
 	txn := database.GetDB().Txn(true)
 	defer txn.Abort()
 
@@ -53,6 +55,7 @@ func CreateCage(c *gin.Context) {
 		return
 	}
 
+	//Commit Changes to DB
 	txn.Commit()
 	c.JSON(http.StatusCreated, newCage)
 }
@@ -82,6 +85,7 @@ func UpdateCage(c *gin.Context) {
 		return
 	}
 
+	//provide
 	var updateRequest UpdateCageRequest
 	if err := c.ShouldBindJSON(&updateRequest); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid update data"})

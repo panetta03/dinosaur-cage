@@ -20,11 +20,11 @@ cd dinosaur-cage
 
 2. Install dependencies: go mod tidy
 
-3. Run the application: go run main.go
+3. Run the application: go run main.go or run dinosaur-cage.exe
 
 4. Navigate to Swagger UI http://localhost:8080/swagger/index.html
 
-
+5. Enjoy!
 
 ## Usage
 
