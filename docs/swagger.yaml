@@ -36,6 +36,13 @@ definitions:
     x-enum-varnames:
     - PowerStatusActive
     - PowerStatusDown
+  controllers.UpdateCageRequest:
+    properties:
+      max_capacity:
+        type: integer
+      power_status:
+        $ref: '#/definitions/models.PowerStatus'
+    type: object
   models.Cage:
     properties:
       current_capacity:
@@ -195,7 +202,7 @@ paths:
         name: cage
         required: true
         schema:
-          $ref: '#/definitions/models.Cage'
+          $ref: '#/definitions/controllers.UpdateCageRequest'
       produces:
       - application/json
       responses:
@@ -271,4 +278,36 @@ paths:
           schema:
             type: string
       summary: Get a dinosaur by ID
+  /getdinosaurs/{cage_id}:
+    get:
+      description: Get a list of all dinosaurs in a specific cage by its ID.
+      operationId: get-dinosaurs-in-cage
+      parameters:
+      - description: Cage ID
+        in: path
+        name: cage_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Dinosaur'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get a list of dinosaurs in a cage.
 swagger: "2.0"

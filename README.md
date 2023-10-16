@@ -50,10 +50,10 @@ You can configure the project by editing the `config.yml` file. This file contai
 
 ## Considerations
 
-The approach to this project to create an extensible way to add new species of dinosaurs along the way. I chose Factory design pattern for this as this provided the best way for future extensibility and mainteance across many species. I chose to build the project using models and controllers to interact with the data. When it came to persistence I ended up with go-memdb. 
+The approach to this project to create an extensible way to add new species of dinosaurs along the way. I chose Factory design pattern for this as this provided the best way for future extensibility and mainteance across many species. I chose to build the project using models and controllers to interact with the data. When it came to persistence I ended up with sqlite as it was an easy way to perist a database embedded in the application without messy installs. 
 
-Given that I was learning go with this project I wanted to avoid any external dependencies that could make it difficult to use this project. For example I started with a Postgres implementation and then moved on to sqlite. When it became clear that time was factor for this project I ended up with an in memory solution for persistence using go-memdb.
+Given that I was learning go with this project I wanted to avoid any external dependencies that could make it difficult to use this project. For example I started with a Postgres implementation and then moved on to sqlite.
 
  With Cages I was able to manage to add most of the features of a cage. I abstracted out checks on cages into a separate utils section to avoid too much noise in the controller. Additionally I chose swagger for clean documentation and interaction with the APIs. 
 
- Things that I did not complete. I wasn't able to complete the automated tests. I would have liked to have had more time to add unit testing. Lastly I would like revampe this solution to use better persistence either through sqlite or postgres.
+ Things that I did not complete. I wasn't able to complete the automated tests. I would have liked to have had more time to add unit testing.

@@ -1,113 +1,123 @@
 package repository
 
 import (
+	"dinosaur-cage/database"
 	cagemodels "dinosaur-cage/models"
 	dinomodels "dinosaur-cage/models/dinosaur"
+	"log"
 
-	"github.com/hashicorp/go-memdb"
+	_ "github.com/mattn/go-sqlite3"
 )
 
-var (
-	Dinosaurs         []dinomodels.Dinosaur
-	Cages             []cagemodels.Cage
-	CageIDCounter     int
-	DinosaurIDCounter int
-)
+func InsertDinosaur(dinosaur *dinomodels.Dinosaur) error {
 
-func InsertDinosaur(txn *memdb.Txn, dinosaur *dinomodels.Dinosaur) error {
-	// Retrieve the highest ID from the 'dinosaurs' table
-	highestID := 0
-	raw, err := txn.Last("dinosaurs", "id")
-	if err == nil && raw != nil {
-		highestID = raw.(*dinomodels.Dinosaur).ID
+	stmt, err := database.GetDB().Prepare("INSERT INTO dinosaurs (name, species, diet, cage_id) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		log.Println("Error preparing SQL statement:", err)
+		return err
 	}
+	defer stmt.Close()
 
-	// Increment the ID
-	dinosaur.ID = highestID + 1
-
-	if err := txn.Insert("dinosaurs", dinosaur); err != nil {
+	_, err = stmt.Exec(dinosaur.Name, dinosaur.Species, dinosaur.Diet, dinosaur.CageID)
+	if err != nil {
+		log.Println("Error executing SQL statement:", err)
 		return err
 	}
 
 	return nil
 }
 
-func GetDinosaur(txn *memdb.Txn, id int) (*dinomodels.Dinosaur, error) {
-	raw, err := txn.First("dinosaurs", "id", id)
+func GetDinosaur(id int) (*dinomodels.Dinosaur, error) {
+	row := database.GetDB().QueryRow("SELECT id, name, species, diet, cage_id FROM dinosaurs WHERE id = ?", id)
+	dinosaur := dinomodels.Dinosaur{}
+	err := row.Scan(&dinosaur.ID, &dinosaur.Name, &dinosaur.Species, &dinosaur.Diet, &dinosaur.CageID)
 	if err != nil {
 		return nil, err
 	}
-
-	if raw == nil {
-		return nil, nil
-	}
-
-	dinosaur := raw.(*dinomodels.Dinosaur)
-	return dinosaur, nil
+	return &dinosaur, nil
 }
 
-func GetCage(txn *memdb.Txn, id int) (*cagemodels.Cage, error) {
-	raw, err := txn.First("cages", "id", id)
+func GetCage(id int) (*cagemodels.Cage, error) {
+	row := database.GetDB().QueryRow("SELECT id, name, max_capacity, power_status FROM cages WHERE id = ?", id)
+	cage := cagemodels.Cage{}
+	err := row.Scan(&cage.ID, &cage.Name, &cage.MaxCapacity, &cage.PowerStatus)
 	if err != nil {
 		return nil, err
 	}
-
-	if raw == nil {
-		return nil, nil
-	}
-
-	cage := raw.(*cagemodels.Cage)
-	return cage, nil
+	return &cage, nil
 }
 
-func InsertCage(txn *memdb.Txn, cage *cagemodels.Cage) error {
-	// Retrieve the highest ID from the 'cages' table
-	highestID := 0
-	raw, err := txn.Last("cages", "id")
-	if err == nil && raw != nil {
-		highestID = raw.(*cagemodels.Cage).ID
+func InsertCage(cage *cagemodels.Cage) error {
+	stmt, err := database.GetDB().Prepare("INSERT INTO cages (name, power_status, max_capacity, current_capacity) VALUES (?, ?, ?, ?)")
+	if err != nil {
+		return err
 	}
+	defer stmt.Close()
 
-	// Increment the ID
-	cage.ID = highestID + 1
-
-	if err := txn.Insert("cages", cage); err != nil {
+	_, err = stmt.Exec(cage.Name, cage.PowerStatus, cage.MaxCapacity, cage.CurrentCapacity)
+	if err != nil {
 		return err
 	}
 
 	return nil
 }
-func UpdateCage(updatedCage cagemodels.Cage) cagemodels.Cage {
-	for i, cage := range Cages {
-		if cage.ID == updatedCage.ID {
-			// Create a new instance with the updated values
-			updated := cagemodels.Cage{
-				ID:          cage.ID,
-				Name:        updatedCage.Name,
-				MaxCapacity: updatedCage.MaxCapacity,
-				PowerStatus: updatedCage.PowerStatus,
-				// Include other fields here
-			}
 
-			// Update the cage in the slice
-			Cages[i] = updated
+func UpdateCage(updatedCage cagemodels.Cage) error {
+	stmt, err := database.GetDB().Prepare("UPDATE cages SET name=?, max_capacity=?, power_status=? WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
 
-			// Return the updated instance
-			return updated
+	_, err = stmt.Exec(updatedCage.Name, updatedCage.MaxCapacity, updatedCage.PowerStatus, updatedCage.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AddDinosaurToCage(updatedDinosaur dinomodels.Dinosaur) error {
+	stmt, err := database.GetDB().Prepare("UPDATE dinosaurs SET cage_id=? WHERE id=?")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(updatedDinosaur.CageID, updatedDinosaur.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetDinosaursInCage(cageID int) []dinomodels.Dinosaur {
+	query := "SELECT id, name, species, diet, cage_id FROM dinosaurs WHERE cage_id = ?"
+	rows, err := database.GetDB().Query(query, cageID)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	dinosaurs := []dinomodels.Dinosaur{}
+
+	for rows.Next() {
+		var dinosaur dinomodels.Dinosaur
+		if err := rows.Scan(&dinosaur.ID, &dinosaur.Name, &dinosaur.Species, &dinosaur.Diet, &dinosaur.CageID); err != nil {
+			return nil
 		}
-	}
-	return cagemodels.Cage{}
-}
-
-func AddDinosaurToCage(dinosaur *dinomodels.Dinosaur, cage *cagemodels.Cage) {
-
-	// Check for nil or create a new CurrentDinosaurs slice
-	if cage.CurrentDinosaurs == nil {
-		cage.CurrentDinosaurs = &[]dinomodels.Dinosaur{*dinosaur}
-	} else {
-
-		// Append the dinosaur to the CurrentDinosaurs of the cage
-		*cage.CurrentDinosaurs = append(*cage.CurrentDinosaurs, *dinosaur)
+		dinosaurs = append(dinosaurs, dinosaur)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil
+	}
+
+	if len(dinosaurs) == 0 {
+		log.Println("Error executing SQL statement:", err)
+		return nil
+	}
+
+	return dinosaurs
 }

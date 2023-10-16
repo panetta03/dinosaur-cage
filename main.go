@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	// Initialize the go-memdb database
+	//initialize sqlite database
 	database.InitDB()
 
 	// Initialize the Gin router

@@ -1,10 +1,13 @@
 package controllers
 
 import (
-	"dinosaur-cage/database"
 	"dinosaur-cage/database/repository"
 	models "dinosaur-cage/models/dinosaur"
+	"fmt"
+	"io"
+	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -28,14 +31,26 @@ type CreateDinosaurRequest struct {
 // @Failure 500 {object} string "Internal Server Error"
 // @Router /dinosaurs [post]
 func CreateDinosaur(c *gin.Context) {
-	var d models.Dinosaur
+
+	wd, err := os.Getwd()
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	// Set up console and file log output
+	logFile, err := os.OpenFile(wd+"/utils/dinosaur-cage.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatal("Failed to open log file:", err)
+	}
+	defer logFile.Close()
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+
+	var d CreateDinosaurRequest
 	if err := c.ShouldBindJSON(&d); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
-	txn := database.GetDB().Txn(true)
-	defer txn.Abort()
 
 	// Determine the factory based on the dinosaur's species
 	var factory models.DinosaurFactory
@@ -60,17 +75,16 @@ func CreateDinosaur(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid dinosaur species"})
 		return
 	}
-
 	// Create the dinosaur with the appropriate factory
 	newDinosaur := factory.CreateDinosaur(d.Name)
-
-	// Insert the dinosaur into the go-memdb database
-	if err := repository.InsertDinosaur(txn, &newDinosaur); err != nil {
+	// Insert the dinosaur into the SQLite database
+	log.Println("Inserting dinosaur:", newDinosaur.Name, newDinosaur.Species)
+	if err := repository.InsertDinosaur(&newDinosaur); err != nil {
+		log.Println("Failed to insert dinosaur:", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create dinosaur"})
 		return
 	}
 
-	txn.Commit()
 	c.JSON(http.StatusCreated, newDinosaur)
 }
 
@@ -92,11 +106,8 @@ func GetDinosaur(c *gin.Context) {
 		return
 	}
 
-	txn := database.GetDB().Txn(false)
-	defer txn.Abort()
-
-	// Retrieve the dinosaur from the go-memdb database
-	dinosaur, err := repository.GetDinosaur(txn, dinosaurID)
+	// Retrieve the dinosaur from the SQLite database
+	dinosaur, err := repository.GetDinosaur(dinosaurID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve dinosaur"})
 		return
