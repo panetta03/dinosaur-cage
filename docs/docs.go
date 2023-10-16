@@ -176,7 +176,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.Cage"
+                            "$ref": "#/definitions/controllers.UpdateCageRequest"
                         }
                     }
                 ],
@@ -290,6 +290,54 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/getdinosaurs/{cage_id}": {
+            "get": {
+                "description": "Get a list of all dinosaurs in a specific cage by its ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a list of dinosaurs in a cage.",
+                "operationId": "get-dinosaurs-in-cage",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Cage ID",
+                        "name": "cage_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.Dinosaur"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -346,6 +394,17 @@ const docTemplate = `{
                 "PowerStatusActive",
                 "PowerStatusDown"
             ]
+        },
+        "controllers.UpdateCageRequest": {
+            "type": "object",
+            "properties": {
+                "max_capacity": {
+                    "type": "integer"
+                },
+                "power_status": {
+                    "$ref": "#/definitions/models.PowerStatus"
+                }
+            }
         },
         "models.Cage": {
             "type": "object",
